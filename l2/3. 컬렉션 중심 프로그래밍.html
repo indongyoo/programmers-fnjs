@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3. 컬렉션 중심 프로그래밍 </title>
+</head>
+<body>
+
+# 3. 컬렉션 중심 프로그래밍
+
+## 3개의 대표 함수 map, reduce, findVal
+
+`map, reduce, findVal`를 이용하면 컬렉션을 다루는 거의 대부분의 로직을 구현할 수 있습니다.
+
+### 함수 계층
+
+<pre>
+                                reduce                        findVal(C)
+        map ___________________/   |   \                        /  \
+        / \                   /    |    \                  find(C)   or, and
+    mapC  series         pipe   groupBy   filter            /  \
+     |                   go    partition  reject        match    some(C), none(C), every(C)
+concurrency              ...      ...      ...          unless
+</pre>
+
+</body>
+</html>

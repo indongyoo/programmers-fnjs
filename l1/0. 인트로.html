@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+
+# 인트로
+
+## 서광열님 블로그 중 ...
+
+프로그래밍의 본질은
+1) 한 번에 풀 수 없는 크고 복잡한 문제를 작은 문제들로 나누어서 해결하고
+2) 그렇게 나온 결과물들을 조합하여 다른 문제를 해결하는 것을 말합니다.
+
+여기서 좋은 프로그램의 가장 중요한 특성으로 조합성(composability)이 등장합니다.
+우리는 계속해서 크고 복잡한 문제를 풀어야 하고, 또한 비슷하지만 조금은 다른 문제들을
+풀어야 합니다. 앞서 만들어 놓은 산출물을 쉽게 조합하여 새로운 문제를 해결할 수 있다면
+프로그래머의 생산성은 비약적으로 늘 수 있기 때문입니다.
+
+
+## 에릿 엘리엇 - 소프트웨어 합성
+
+원문 - https://medium.com/javascript-scene/composing-software-an-introduction-27b72500d6ea
+번역 - https://midojeong.github.io/2018/03/16/composing-software-intro/
+
+첫 고등학교 프로그래밍 수업 시간에 소프트웨어 개발이란 복잡한 문제를
+작은 문제들로 분해하고 작은 문제들의 해법들을 다시 조합해
+복잡한 문제를 해결 할 수 있는 솔루션을 만드는 행위라고 배웠습니다.
+
+전 그 말의 중요성을 너무 늦게 깨달았다는 것이 매우 후회됩니다.
+너무 늦게 소프트웨어 설계의 본질을 깨달은 것 입니다.
+
+수백 명의 개발자들을 인터뷰하며 나만 그런 것이 아님을 알게됐습니다.
+아주 소수의 개발자만이 소프트웨어 개발의 본질에 대해 잘 알고 있었습니다.
+대부분의 경우에는 우리가 활용해야 하는 가장 중요한 개념과 그것을 잘 적용하는
+방법을 몰랐습니다.
+
+다음은 소프트웨어 개발에서 가장 중요한 두가지 질문입니다.
+
+ - 함수 합성 function composition 이란 무엇인가?
+ - 객체 합성 object composition이란 무엇인가?
+
+문제는 당신이 단지 잘 모른다고해서 객체 및 함수 합성을 하지 않을 수는 없다는 것입니다.
+당신은 여전히 의식하지않고 (나쁘게)합성을 합니다. 그렇기에 버그가 넘쳐나고 다른 개발자가
+이해하기 어려운 코드가 나옵니다. 이는 큰 문제이며 적지않은 대가를 지불하고 있습니다.
+소프트웨어는 만드는 것보다 유지 보수하는 데 더 많은 시간이 들고,
+버그는 전 세계 수십억 명의 사람들에게 영향을줍니다.
+
+오늘날 소프트웨어는 모든 곳에 존재합니다. 모든 자동차는 바퀴가 달린 미니 수퍼 컴퓨터이며
+소프트웨어 설계 문제로 인해 사고가 발생하고 사람이 목숨을 잃습니다.
+
+2013년, 배심원단은 사고를 조사하는 과정에서 Toyota의 소프트웨어 개발팀이
+10,000 개의 글로벌 변수가있는 스파게티 코드를 작성한 것을 발견했습니다.
+
+## 복잡한 문제 한 번에 해결하기
+
+<script>
+  const add10 = a => new Promise(resolve => resolve(a + 10));
+  const sub10 = a => a - 10;
+  const add5 = a => a + 5;
+  const sub5 = a => new Promise(resolve => resolve(a - 5));
+
+  async function f1(a) {
+    var b = a;
+    b = await add10(b);
+    b = sub10(b);
+    b = add5(b);
+    b = await sub5(b);
+    return b;
+  }
+
+  function log(a) {
+    a instanceof Promise ?
+      a.then(console.log) : console.log(a);
+  }
+//  log(f1(10));
+
+  function go(a, ...fs) {
+    var b = a;
+    var iter = fs[Symbol.iterator]();
+    return function recur(b) {
+      for (const f of iter) {
+        b = f(b);
+        if (b instanceof Promise) return b.then(recur);
+      }
+      return b;
+    } (b);
+  }
+
+  go(10, add10, sub10, add5, sub5, log);
+//  go(10, sub10, add5);
+</script>
+
+## 작은 문제로 나누어서, 복잡한 문제를 해결하기
+
+<script type="module">
+  const then = f => a => a instanceof Promise ? a.then(f) : f(a);
+  const callR = (b, f) => f(b);
+  const go = (a, ...fs) => fs.map(then).reduce(callR, a);
+
+  /*const add10 = then(a => a + 10);
+  const add100 = then(a => a + 100);
+  const add1000 = then(a => a + 1000);
+
+  add1000(add100(add10(Promise.resolve(0))))
+    .then(console.log);
+
+  const [add10, add100, add1000] = [
+    a => a + 10,
+    a => a + 100,
+    a => a + 1000,
+  ].map(then);*/
+
+  // (go 10 add10 add100 add1000)
+  go(10, add10, sub10, add5, sub5);
+
+//  go(10, add10, sub10, add5, sub5, console.log);
+//  go(10, sub10, add5, console.log);
+</script>
+
+## 함수형 프로그래밍이란?
+
+### 순수 함수
+
+<script>
+  function add(a, b) { return a + b; };
+
+  var arr = [1, 2, 3];
+//  console.log( arr.map(a=>a+10) );
+//  console.log( arr );
+
+  function identity(a) {
+    return a;
+  }
+</script>
+
+### 효과가 있는 함수
+
+<script>
+  function User() {}
+  User.prototype.set = function(key, val) {
+    this[key] = val;
+    return this;
+  };
+
+  var user = new User();
+  user
+    .set('name', 'ID')
+    .set('age', 35);
+
+//  console.log(user);
+</script>
+
+</body>
+</html>
