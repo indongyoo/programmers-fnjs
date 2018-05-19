@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+
+<script>
+  function gen(gf) {
+    return function(obj) {
+      const iter = gf(obj);
+      return { next: () => iter.next(), [Symbol.iterator]() { return this } }
+    }
+  }
+
+  function *valuesIter1(obj) {
+    for (const k in obj) yield obj[k];
+  }
+
+  const valuesIter2 = gen(function *(obj) {
+    for (const k in obj) yield obj[k];
+  });
+
+  function test(iter) {
+    var res = [];
+    return function recur() {
+      for (const v of iter) {
+        return new Promise(function(resolve) {
+          setTimeout(function() {
+            res.push(v);
+            resolve();
+          }, 10);
+        }).then(recur);
+      }
+      return res;
+    } ();
+  }
+  // 얘는 실패
+  test(valuesIter1({a:1, b: 2})).then(console.log);
+  // [1]
+
+  // 얘는 성공
+  test(valuesIter2({a:1, b: 2})).then(console.log);
+  // [1, 2]
+</script>
+
+</body>
+</html>

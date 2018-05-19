@@ -58,3 +58,29 @@ map(a => Promise.resolve(a + 10), [1, 2, 3]).then(console.log);
 // map(a => a + 10, Promise.resolve([1, 2, 3])).then(console.log);
 //
 // [11, 12, 13]
+
+
+function map(f, coll) {
+  var res = [];
+  for (const v of coll) {
+    res.push(f(v));
+  }
+  return res;
+}
+
+function map(f, coll) {
+  return reduce((res, a) => {
+    const b = f(a);
+    return then2(function (b) {
+      res.push(b);
+      return res;
+    }, b);
+  }, coll, []);
+}
+
+function map(f, coll) {
+  return reduce((res, a) => then2(function (b) {
+    res.push(b);
+    return res;
+  }, f(a)), coll, []);
+}

@@ -4,8 +4,26 @@ function *valuesIter(obj) {
   for (const k in obj) yield obj[k];
 }
 
-function *entriesIter(obj) {
+function *entriesIterG(obj) {
   for (const k in obj) yield [k, obj[k]];
+}
+
+function thiz() {
+  return this;
+}
+
+class EntriesIter {
+  constructor(obj) {
+    this._iter = entriesIterG(obj);
+  }
+  next() {
+    return this._iter.next();
+  }
+  [Symbol.iterator]() { return this; }
+}
+
+function entriesIter(obj) {
+  return new EntriesIter(obj);
 }
 
 function *reverseIter(arr) {
@@ -19,6 +37,7 @@ const collIter = coll =>
 
 const then1 = f => a => a instanceof Promise ? a.then(f) : f(a);
 const then2 = (f, a) => a instanceof Promise ? a.then(f) : f(a);
+const thenR = (a, f) => a instanceof Promise ? a.then(f) : f(a);
 
 function reduce(f, coll, acc) {
   return then2(function(coll) {
@@ -34,17 +53,75 @@ function reduce(f, coll, acc) {
   }, coll);
 }
 
-/*
-function map(f, coll) {
-  return reduce(?, coll, ?);
+function push(arr, v) {
+  arr.push(v);
+  return arr;
 }
-*/
 
-//console.log( map(a => a + 10, [1, 2, 3]) );
+// function map(f, coll) {
+//   return reduce((res, a) => then2(b => push(res, b), f(a)), coll, []);
+// }
+
+
+const isPlainObject = coll => coll.constructor == Object;
+
+const set = (obj, k, v) => (obj[k] = v, obj);
+
+const map = (f, coll) =>
+  isPlainObject(coll) ?
+    reduce(
+      (res, [k, a]) => thenR(f(a), b => set(res, k, b)),
+      entriesIter(coll),
+      {}) :
+    reduce(
+      (res, a) => thenR(f(a), b => push(res, b)),
+      coll,
+      []);
+
+const filter = (f, coll) =>
+  isPlainObject(coll) ?
+    reduce(
+      (res, [k, a]) => thenR(f(a), b => b ? set(res, k, a) : res),
+      entriesIter(coll),
+      {}) :
+    reduce(
+      (res, a) => thenR(f(a), b => b ? push(res, a) : res),
+      coll,
+      []);
+
+// console.log(
+//   filter(a => a % 2, [1, 2, 3, 4, 5])
+// );
+//
+// filter(a => Promise.resolve(a % 2), [1, 2, 3, 4, 5]).then(console.log);
+
+console.log( map(a => a + 10, [1, 2, 3]) );
 // [11, 12, 13]
 
-// map(a => Promise.resolve(a + 10), [1, 2, 3]).then(console.log);
+console.log( map(a => a + 10, { a: 1, b: 2, c: 3 }) );
+// { a: 11, b: 12, c: 13 }
+
+map(a => Promise.resolve(a + 10), { a: 1, b: 2, c: 3 }).then(console.log);
+
+map(a => Promise.resolve(a + 10), [1, 2, 3]).then(console.log);
 // [11, 12, 13]
+
+console.log( filter(a => a % 2, { a: 1, b: 2, c: 3 }) );
+
+filter(a => Promise.resolve(a % 2), { a: 1, b: 2, c: 3 }).then(console.log);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const countBy = (f, coll) => reduce((counts, a) => incSel(counts, f(a)), coll, {});
@@ -178,22 +255,3 @@ function pushSel(parent, k, v) {
 //       }, 1000)
 //     }));
 //   }).then(a => a + 100));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
