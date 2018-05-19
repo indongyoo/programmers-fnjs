@@ -1,10 +1,5 @@
 const identity = a => a;
 
-const collIter = coll =>
-  coll.constructor == Object ?
-    valuesIter(coll) :
-    coll[Symbol.iterator]();
-
 function *valuesIter(obj) {
   for (const k in obj) yield obj[k];
 }
@@ -17,6 +12,10 @@ function *reverseIter(arr) {
   var l = arr.length;
   while (l--) yield arr[l];
 }
+const collIter = coll =>
+  coll.constructor == Object ?
+    valuesIter(coll) :
+    coll[Symbol.iterator]();
 
 const then1 = f => a => a instanceof Promise ? a.then(f) : f(a);
 const then2 = (f, a) => a instanceof Promise ? a.then(f) : f(a);
@@ -35,33 +34,17 @@ function reduce(f, coll, acc) {
   }, coll);
 }
 
-(async function() {
-  console.log(
-    await reduce((a, b) => a + b, Promise.resolve([1, 2, 3]))
-  );
-}) ();
+/*
+function map(f, coll) {
+  return reduce(?, coll, ?);
+}
+*/
 
-reduce((a, b) => a + b, Promise.resolve([1, 2, 3, 4])).then(console.log)
+//console.log( map(a => a + 10, [1, 2, 3]) );
+// [11, 12, 13]
 
-console.log(
-  reduce((a, b) => a + b, [1, 2, 3])
-);
-
-reduce((a, b) => Promise.resolve(a + b), [10, 20, 30]).then(console.log);
-reduce((a, b) => Promise.resolve(a + b), Promise.resolve([10, 20, 30])).then(console.log);
-
-reduce(
-  (a, b) => Promise.resolve(a + b),
-  Promise.resolve([10, 20, 30]),
-  Promise.resolve(10))
-
-  .then(console.log);
-
-
-
-
-
-
+// map(a => Promise.resolve(a + 10), [1, 2, 3]).then(console.log);
+// [11, 12, 13]
 
 
 const countBy = (f, coll) => reduce((counts, a) => incSel(counts, f(a)), coll, {});
@@ -146,6 +129,55 @@ function pushSel(parent, k, v) {
 //
 
 
+// (async function() {
+//   console.log(
+//     await reduce((a, b) => a + b, Promise.resolve([1, 2, 3]))
+//   );
+// }) ();
+//
+// reduce((a, b) => a + b, Promise.resolve([1, 2, 3, 4])).then(console.log)
+//
+// console.log(
+//   reduce((a, b) => a + b, [1, 2, 3])
+// );
+//
+// reduce((a, b) => Promise.resolve(a + b), [10, 20, 30]).then(console.log);
+// reduce((a, b) => Promise.resolve(a + b), Promise.resolve([10, 20, 30])).then(console.log);
+//
+// reduce(
+//   (a, b) => Promise.resolve(a + b),
+//   Promise.resolve([10, 20, 30]),
+//   Promise.resolve(10))
+//
+//   .then(console.log);
+
+
+//
+//
+// var _then2 = (f, a) => a instanceof Promise ? a.then(f) : f(a);
+//
+// Promise.resolve(10)
+//   .then(a => a + 10)
+//   .then(a => a + 10)
+//   .then(a => a + 10)
+//   .then(console.log);
+//
+//
+//   then2(console.log, new Promise(function(resolve) {
+//     resolve(new Promise(function(resolve) {
+//       setTimeout(function() {
+//         resolve(new Promise(function(resolve) {
+//           setTimeout(function() {
+//             resolve(new Promise(function(resolve) {
+//               setTimeout(function() {
+//                 resolve(1000);
+//               }, 1000)
+//             }));
+//           }, 1000)
+//         }));
+//       }, 1000)
+//     }));
+//   }).then(a => a + 100));
 
 
 
