@@ -1,49 +1,40 @@
 const identity = a => a;
 
-function *valuesIter(obj) {
+function gen(g) {
+  return function(v) {
+    const iter = g(v);
+    return { next: () => iter.next(), [Symbol.iterator]() { return this; } }
+  }
+}
+
+const valuesIter = gen(function *(obj) {
   for (const k in obj) yield obj[k];
-}
+});
 
-function *entriesIterG(obj) {
+const entriesIter = gen(function *(obj) {
   for (const k in obj) yield [k, obj[k]];
-}
+});
 
-function thiz() {
-  return this;
-}
-
-class EntriesIter {
-  constructor(obj) {
-    this._iter = entriesIterG(obj);
-  }
-  next() {
-    return this._iter.next();
-  }
-  [Symbol.iterator]() { return this; }
-}
-
-function entriesIter(obj) {
-  return new EntriesIter(obj);
-}
-
-function *reverseIter(arr) {
+const reverseIter = gen(function *(arr) {
   var l = arr.length;
   while (l--) yield arr[l];
-}
-const collIter = coll =>
-  coll.constructor == Object ?
-    valuesIter(coll) :
-    coll[Symbol.iterator]();
+});
 
-const then1 = f => a => a instanceof Promise ? a.then(f) : f(a);
-const then2 = (f, a) => a instanceof Promise ? a.then(f) : f(a);
-const thenR = (a, f) => a instanceof Promise ? a.then(f) : f(a);
+const hasIter = coll => !!coll[Symbol.iterator];
+
+const collIter = coll =>
+  hasIter(coll) ?
+    coll[Symbol.iterator]() :
+    valuesIter(coll);
+
+const then = (f, a) => a instanceof Promise ? a.then(f) : f(a);
+const then2 = (a, f) => a instanceof Promise ? a.then(f) : f(a);
 
 function reduce(f, coll, acc) {
-  return then2(function(coll) {
+  return then(function(coll) {
     const iter = collIter(coll);
     acc = acc === undefined ? iter.next().value : acc;
-    return then2(function recur(acc) {
+    return then(function recur(acc) {
       for (const v of iter) {
         acc = f(acc, v);
         if (acc instanceof Promise) return acc.then(recur);
@@ -58,71 +49,82 @@ function push(arr, v) {
   return arr;
 }
 
-// function map(f, coll) {
-//   return reduce((res, a) => then2(b => push(res, b), f(a)), coll, []);
-// }
-
-
-const isPlainObject = coll => coll.constructor == Object;
-
 const set = (obj, k, v) => (obj[k] = v, obj);
 
+const baseMF = (f1, f2) => (f, coll) =>
+  hasIter(coll) ?
+    reduce(f1(f), coll, []) :
+    reduce(f2(f), entriesIter(coll), {});
+
+const map = baseMF(
+  f => (res, a) => then2(f(a), b => push(res, b)),
+  f => (res, [k, a]) => then2(f(a), b => set(res, k, b))
+);
+
+const filter = baseMF(
+  f => (res, a) => then2(f(a), b => b ? push(res, a) : res),
+  f => (res, [k, a]) => then2(f(a), b => b ? set(res, k, a) : res)
+);
+
+// baseMF 의 실행 결과
+/*
 const map = (f, coll) =>
-  isPlainObject(coll) ?
+  hasIter(coll) ?
     reduce(
-      (res, [k, a]) => thenR(f(a), b => set(res, k, b)),
-      entriesIter(coll),
-      {}) :
-    reduce(
-      (res, a) => thenR(f(a), b => push(res, b)),
+      (f => (res, a) => then2(f(a), b => push(res, b)))(f),
       coll,
-      []);
+      []) :
+    reduce(
+      (f => (res, [k, a]) => then2(f(a), b => set(res, k, b)))(f),
+      entriesIter(coll),
+      {});*/
+
+/*const map = (f, coll) =>
+  hasIter(coll) ?
+    reduce(
+      (res, a) => then2(f(a), b => push(res, b)),
+      coll,
+      []) :
+    reduce(
+      (res, [k, a]) => then2(f(a), b => set(res, k, b)),
+      entriesIter(coll),
+      {});
 
 const filter = (f, coll) =>
-  isPlainObject(coll) ?
+  hasIter(coll) ?
     reduce(
-      (res, [k, a]) => thenR(f(a), b => b ? set(res, k, a) : res),
-      entriesIter(coll),
-      {}) :
-    reduce(
-      (res, a) => thenR(f(a), b => b ? push(res, a) : res),
+      (res, a) => then2(f(a), b => b ? push(res, a) : res),
       coll,
-      []);
+      []) :
+    reduce(
+      (res, [k, a]) => then2(f(a), b => b ? set(res, k, a) : res),
+      entriesIter(coll),
+      {});*/
 
-// console.log(
-//   filter(a => a % 2, [1, 2, 3, 4, 5])
-// );
-//
-// filter(a => Promise.resolve(a % 2), [1, 2, 3, 4, 5]).then(console.log);
 
-console.log( map(a => a + 10, [1, 2, 3]) );
+console.log(
+  filter(a => a % 2, [1, 2, 3, 4, 5])
+);
+
+filter(a => Promise.resolve(a % 2), [1, 2, 3, 4, 5]).then(console.log);
+
+console.log( filter(a => a % 2, { a: 1, b: 2, c: 3 }) );
+// { a: 1, c: 3 }
+
+filter(a => Promise.resolve(a % 2), { a: 1, b: 2, c: 3 }).then(console.log);
+// { a: 1, c: 3 }
+
+/*console.log( map(a => a + 10, [1, 2, 3]) );
+// [11, 12, 13]
+
+map(a => Promise.resolve(a + 10), [1, 2, 3]).then(console.log);
 // [11, 12, 13]
 
 console.log( map(a => a + 10, { a: 1, b: 2, c: 3 }) );
 // { a: 11, b: 12, c: 13 }
 
 map(a => Promise.resolve(a + 10), { a: 1, b: 2, c: 3 }).then(console.log);
-
-map(a => Promise.resolve(a + 10), [1, 2, 3]).then(console.log);
-// [11, 12, 13]
-
-console.log( filter(a => a % 2, { a: 1, b: 2, c: 3 }) );
-
-filter(a => Promise.resolve(a % 2), { a: 1, b: 2, c: 3 }).then(console.log);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// { a: 11, b: 12, c: 13 }*/
 
 const countBy = (f, coll) => reduce((counts, a) => incSel(counts, f(a)), coll, {});
 
@@ -231,7 +233,7 @@ function pushSel(parent, k, v) {
 
 //
 //
-// var _then2 = (f, a) => a instanceof Promise ? a.then(f) : f(a);
+// var _then = (f, a) => a instanceof Promise ? a.then(f) : f(a);
 //
 // Promise.resolve(10)
 //   .then(a => a + 10)
@@ -240,7 +242,7 @@ function pushSel(parent, k, v) {
 //   .then(console.log);
 //
 //
-//   then2(console.log, new Promise(function(resolve) {
+//   then(console.log, new Promise(function(resolve) {
 //     resolve(new Promise(function(resolve) {
 //       setTimeout(function() {
 //         resolve(new Promise(function(resolve) {

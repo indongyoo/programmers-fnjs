@@ -7,9 +7,9 @@
 <body>
 
 <script>
-  function gen(gf) {
-    return function(obj) {
-      const iter = gf(obj);
+  function gen(g) {
+    return function(v) {
+      const iter = g(v);
       return { next: () => iter.next(), [Symbol.iterator]() { return this } }
     }
   }
