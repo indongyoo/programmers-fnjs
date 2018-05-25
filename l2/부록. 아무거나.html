@@ -2,9 +2,61 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>부록. 아무거나</title>
+  <title></title>
 </head>
+
 <body>
+
+<script>
+function *valuesIter(obj) {
+  for (const k in obj) yield obj[k];
+}
+
+function f1(iter) {
+  for (const a of iter) {
+    console.log(a);
+    return f1(iter); // 비동기가 일어나지 않으면 제너레이터로 만든 이터레이터를 for...of 에 다시 넣어도 정상 동작
+  }
+}
+
+f1(valuesIter({a:1,b:2}));
+// 1
+// 2
+
+function f2(iter) {
+  for (const a of iter) {
+    console.log(a);
+    setTimeout(function() {
+      f2(iter); // 비동기가 일어나면 제너레이터로 만든 이터레이터를 for...of 에 다시 넣었을때 비정상 동작
+    }, 1);
+    return;
+  }
+}
+
+f2(valuesIter({a:1,b:2}));
+// 1
+
+function wrap(iter) {
+  return {
+    target: iter,
+    next: () => iter.next(),
+    [Symbol.iterator]() { return this; }
+  };
+}
+
+f2(wrap(valuesIter({a:1,b:2})));
+// 1
+// 2
+
+function delReturn(iter) {
+  iter.return = null;
+  return iter;
+}
+
+f2(delReturn(valuesIter({a:10,b:20})));
+// 10
+// 20
+</script>
 
 </body>
 </html>
