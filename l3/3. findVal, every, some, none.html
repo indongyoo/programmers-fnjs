@@ -18,6 +18,10 @@
     a => Promise.resolve(a > 3 ? '끗' : undefined),
     [1,2,3,4,5,6]
   ).then(log);
+
+  go({ a: 1, b: 2, c: 3, d: 4, e: 5 },
+    findVal(a => Promise.resolve(a > 3 ? '끗' : undefined)),
+    log);
 </script>
 
 # find

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="../lib/functional.js"></script>
+</head>
+<body>
+
+<script>
+  go(
+    reduce((a, b) => a + b, [1, 2, 3]),
+    log);
+
+  go(
+    reduce((a, b) => a + b, [1, 2, 3], 10),
+    log);
+
+  go(
+    reduce((a, b) => a + b, [1, 2, 3], Promise.resolve(100)),
+    log);
+
+  go(
+    reduce((a, b) => Promise.resolve(a + b), [1, 2, 3]),
+    log);
+
+  go(
+    reduce((a, b) => Promise.resolve(a + b), {a: 10, b: 20, c: 30}),
+    log);
+
+  go(
+    reduce((a, b) => Promise.resolve(a + b), [1, 2, 3], 1000),
+    log);
+
+  go(
+    reduce((a, b) => Promise.resolve(a + b), [1, 2, 3], Promise.resolve(10000)),
+    log);
+</script>
+
+</body>
+</html>

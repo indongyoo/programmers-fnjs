@@ -68,19 +68,19 @@ function map(f, coll) {
   return res;
 }
 
-function map(f, coll) {
-  return reduce((res, a) => {
-    const b = f(a);
-    return then2(function (b) {
-      res.push(b);
-      return res;
-    }, b);
-  }, coll, []);
-}
+// function map(f, coll) {
+//   return reduce((res, a) => {
+//     const b = f(a);
+//     return then2(function (b) {
+//       res.push(b);
+//       return res;
+//     }, b);
+//   }, coll, []);
+// }
 
-function map(f, coll) {
-  return reduce((res, a) => then2(function (b) {
-    res.push(b);
-    return res;
-  }, f(a)), coll, []);
-}
+// function map(f, coll) {
+//   return reduce((res, a) => then2(function (b) {
+//     res.push(b);
+//     return res;
+//   }, f(a)), coll, []);
+// }
