@@ -11,13 +11,80 @@
 
 ## values
 
+<script>
+  console.log(
+    Object.values({ a: 1, b: 2})
+  );
+  console.log(
+    Object.values(new Set([1, 2, 3, 4]))
+  );
+  console.log(
+    Object.values(new Map([['a', 1], ['b', 2]]))
+  );
+
+  console.log(
+    values({ a: 1, b: 2})
+  );
+  console.log(
+    values(new Set([1, 2, 3, 4]))
+  );
+  console.log(
+    values(new Map([['a', 1], ['b', 2]]))
+  );
+  console.log(
+    values(function *() {
+      yield 10;
+      yield 5;
+      yield -5;
+    } ())
+  );
+</script>
+
 ## entries
 
 # filter
 
 ## reject
 
+<script>
+  console.clear();
+
+  log(filter(a => a % 2, [1, 2, 3, 4]));
+
+  log(reject(a => a % 2, [1, 2, 3, 4]));
+
+  reject(a => Promise.resolve(a % 2), [1, 2, 3, 4])
+    .then(console.log);
+</script>
+
 ## compact
+
+<script>
+  log( compact([0, false, {}, 10, null]) );
+  // [{}, 10]
+
+  const users = [
+    { name: 'aa', level: 150 },
+    { name: 'bb', level: 50 },
+    { name: 'cc', level: 30 }
+  ];
+
+  const goldMembers = users => filter(u => u.level > 100, users);
+  log( goldMembers(users) );
+</script>
+
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
