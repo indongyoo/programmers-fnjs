@@ -81,11 +81,46 @@ go(100, f2, log);
     filter(a => a % 2),
     map(a => a * 2),
     addAll);
+  clear();
 </script>
 
 ## 비동기 제어하기
 
 ## then 보다 쉬운 go
+
+## 실무적 사례
+
+<script>
+var users = [
+  { id: 1, name: 'aa', age: 23 },
+  { id: 2, name: 'bb', age: 32 },
+  { id: 3, name: 'cc', age: 31 },
+  { id: 4, name: 'dd', age: 28 },
+];
+
+function getUsers() {
+  return Promise.resolve(users);
+}
+
+go(users,
+  filter(u => u.age < 30),
+  map(u => u.name),
+  log);
+// ["aa", "dd"]
+
+go(users,
+  reject(u => u.age < 30),
+  map(u => u.age),
+  reduce((a, b) => a + b),
+  log);
+
+go(users,
+  reject(u => u.age < 30),
+  users => reduce((total, u) => total + u.age, users, 0),
+  log);
+</script>
+
+
 
 </body>
 </html>

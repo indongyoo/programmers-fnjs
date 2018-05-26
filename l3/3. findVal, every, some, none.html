@@ -3,18 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <title>Title</title>
+  <script src="../lib/functional.js"></script>
 </head>
 <body>
 
 # findVal
 
+<script>
+  log(
+    findVal(a => a > 3 ? '끗' : undefined, [1,2,3,4,5,6])
+  );
+
+  findVal(
+    a => Promise.resolve(a > 3 ? '끗' : undefined),
+    [1,2,3,4,5,6]
+  ).then(log);
+</script>
+
 # find
+
+<script>
+  log(
+    find(a => a > 3, [1,2,3,4,5,6])
+  );
+
+  find(a => Promise.resolve(a > 3), [1,2,3,4,5,6]).then(log);
+</script>
 
 # some
 
+<script>
+  log( some(a => a % 2, [2, 4, 5]) );
+  some(a => Promise.resolve(a % 2), [2, 4, 5]).then(log);
+</script>
+
 # none
 
+<script>
+  log( none(a => a % 2, [2, 4, 5]) );
+  log( none(a => a % 2, [2, 4, 5]) );
+  none(a => Promise.resolve(a % 2), [2, 4, 5]).then(log);
+</script>
+
 # every
+
+<script>
+  go(every(a => a > 4, [5, 6, 7]), log);
+  go(every(a => Promise.resolve(a > 4), [5, 6, 7, 2]), log);
+</script>
+
 
 </body>
 </html>
