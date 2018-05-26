@@ -71,6 +71,9 @@
 
   const goldMembers = users => filter(u => u.level > 100, users);
   log( goldMembers(users) );
+
+  const goldMembers_2 = filter(u => u.level > 100);
+  log( goldMembers_2(users) );
 </script>
 
 

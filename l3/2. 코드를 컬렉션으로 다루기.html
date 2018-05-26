@@ -8,10 +8,80 @@
 <body>
 
 ## go
+<script>
+go(10,
+  a => a + 10,
+  a => Promise.resolve(a + 10),
+  a => a + 10,
+  console.log);
+
+go(Promise.resolve(10),
+  console.log);
+
+then2(Promise.resolve(10),
+  console.log);
+</script>
 
 ## pipe
 
+<script>
+console.clear();
+
+const f1 = pipe(
+  a => a + 10,
+  a => a + 10,
+  a => a + 10);
+
+log( f1(10) );
+
+const f2 = pipe(
+  a => Promise.resolve(a + 10),
+  a => Promise.resolve(a + 10),
+  a => a + 10);
+
+f2(100).then(log);
+go(100, f2, log);
+</script>
+
 ## curry
+
+<script>
+  clear();
+  const always10 = _ => 10;
+  const noop = _ => undefined;
+
+  // const addMaker = a => b => a + b;
+  var add = (a, b) => a + b;
+  // const add10 = a => a + 10;
+  // const add11 = addMaker(11);
+
+  var add = curry((a, b, c) => a + b + c);
+  log( add(10, 10, 10) );
+  log( add(20)(20, 20) );
+
+  // log( addMaker(10)(10) );
+  // log( add10(10) );
+  // log( add11(10) );
+
+</script>
+
+<script>
+  clear();
+
+  var nums = [1, 2, 3, 4, 5, 6];
+  go(
+    nums,
+    nums => filter(a => a % 2, nums),
+    nums => map(a => a * 2, nums),
+    log);
+
+  const addAll = nums => reduce((a, b) => a + b, nums);
+
+  var a = go(nums,
+    filter(a => a % 2),
+    map(a => a * 2),
+    addAll);
+</script>
 
 ## 비동기 제어하기
 
