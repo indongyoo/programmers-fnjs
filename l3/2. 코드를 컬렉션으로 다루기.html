@@ -118,6 +118,12 @@ go(users,
   reject(u => u.age < 30),
   users => reduce((total, u) => total + u.age, users, 0),
   log);
+
+const f1 = pipe(
+  reject(u => u.age < 30),
+  map(u => u.age),
+  reduce((a, b) => a + b),
+);
 </script>
 
 

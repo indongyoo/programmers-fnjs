@@ -3,12 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <title>Title</title>
+  <script src="../lib/functional.js"></script>
 </head>
 <body>
 
 # series
+<script>
+  function time(a) {
+    return new Promise(resolve => {
+      setTimeout(function() {
+        resolve(a);
+      }, 2000);
+    })
+  }
+
+  // go(
+  //   series([
+  //     _ => time(10),
+  //     _ => time(20),
+  //     _ => time(30)
+  //   ]),
+  //   log);
+  //   // [10, 20, 30]
+  //
+  // go(
+  //   series([
+  //     _ => time(Promise.resolve(100)),
+  //     _ => time(200),
+  //     _ => time(Promise.resolve(300))
+  //   ]),
+  //   log);
+  //   // [100, 200, 300]
+  //
+  // go(
+  //   series({
+  //     users: _ => time(['user', 'user']),
+  //     posts: _ => time(['post', 'post'])
+  //   }),
+  //   log);
+</script>
 
 # concurrency
+
+<script>
+  go(
+    concurrency([
+      _ => time(10),
+      _ => time(20),
+      _ => time(30)
+    ]),
+    log);
+  // [10, 20, 30]
+
+  go(
+    concurrency([
+      _ => time(Promise.resolve(100)),
+      _ => time(200),
+      _ => time(Promise.resolve(300))
+    ]),
+    log);
+  // [100, 200, 300]
+
+  go(
+    concurrency({
+      users: _ => time(['user', 'user']),
+      posts: _ => time(['post', 'post'])
+    }),
+    log);
+
+  go(
+    (async () => {
+      var users = time(['user', 'user']);
+      var posts = time(['post', 'post']);
+      return {
+        users: await users,
+        posts: await posts
+      }
+    }) (),
+    log);
+</script>
+
 
 </body>
 </html>

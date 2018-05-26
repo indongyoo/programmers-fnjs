@@ -3,12 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <title>Title</title>
+  <script src="../lib/functional.js"></script>
 </head>
 <body>
 
 # mapC
+<script>
+  function time(a) {
+    return new Promise(resolve => {
+      setTimeout(function() {
+        resolve(a);
+      }, 1000);
+    })
+  }
+
+  // go([1,2,3],
+  //   map(time),
+  //   log);
+  //
+  // go([10,20,30],
+  //   mapC(time),
+  //   log);
+  //
+  // go({a:1, b: 2},
+  //   mapC(time),
+  //   log);
+</script>
 
 # findValC
+<script>
+/*
+  go([1,2,3,6,5,4],
+    findValC(a => time(a > 10 ? a : undefined)),
+    a => log(`결과 ${a}`));
+*/
+
+  // go([1,2,3,6,5,4],
+  //   nums => findValC(a => time(a > 4 ? a : undefined), nums, 2),
+  //   a => log(`결과 ${a}`));
+
+console.time();
+go([1,2,3,4,5,6,7,8,9,10],
+  nums => findValC(a => time(a > 9 ? a : undefined), nums, 2),
+  a => log(`결과 ${a}`),
+  _ => console.timeEnd());
+</script>
+
 
 # findC
 
