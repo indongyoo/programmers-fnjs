@@ -8,7 +8,8 @@ const clear = console.clear;
 
 const log = console.log;
 
-const curry = f => (a, ..._) => _[0] === undefined ? (..._) => f(a, ..._) : f(a, ..._);
+const curry = f => (a, ..._) =>
+  _.length == 0 ? (..._2) => f(a, ..._2) : f(a, ..._);
 
 function *valuesIter(obj) {
   for (const k in obj) yield obj[k];
@@ -25,14 +26,14 @@ function *reverseIter(arr) {
 
 const hasIter = coll => !!coll[Symbol.iterator];
 
-const alterIter = alter => coll =>
-  hasIter(coll) ? coll[Symbol.iterator]() : alter(coll);
-
-const collIter = alterIter(valuesIter);
+const collIter = coll =>
+  hasIter(coll) ?
+    coll[Symbol.iterator]() :
+    valuesIter(coll);
 
 const reduce = curry(function(f, coll, acc) {
   const iter = collIter(coll);
-  acc = arguments.length == 2 ? iter.next().value : acc;
+  acc = acc === undefined ? iter.next().value : acc;
   for (const a of iter)
     acc = acc instanceof Promise ? acc.then(acc => f(acc, a)) : f(acc, a);
   return acc;
@@ -45,28 +46,22 @@ function push(arr, v) {
 
 const set = (obj, k, v) => (obj[k] = v, obj);
 
-const baseMFIter = (f1, f2) => curry((f, iter, acc = (hasIter(iter) ? [] : {})) =>
-  Array.isArray(acc) ?
-    reduce((res, a) => go(a, f, b => f1(res, a, b)), iter, acc) :
-    reduce((res, [k, a]) => go(a, f, b => f2(res, k, a, b)), iter, acc));
+const baseMF = (f1, f2) => curry((f, coll) =>
+  hasIter(coll) ?
+    reduce((res, a) => go(a, f, b => f1(res, a, b)), coll, []) :
+    reduce((res, [k, a]) => go(a, f, b => f2(res, k, a, b)), entriesIter(coll), {}));
 
-const mapIter = baseMFIter(
+const map = baseMF(
   (res, a, b) => push(res, b),
   (res, k, a, b) => set(res, k, b));
 
-const filterIter = baseMFIter(
+const filter = baseMF(
   (res, a, b) => b ? push(res, a) : res,
   (res, k, a, b) => b ? set(res, k, a) : res);
 
-const map = curry((f, coll) =>
-  hasIter(coll) ? mapIter(f, coll, []) : mapIter(f, entriesIter(coll), {}));
+const countBy = (f, coll) => reduce((counts, a) => incSel(counts, f(a)), coll, {});
 
-const filter = curry((f, coll) =>
-  hasIter(coll) ? filterIter(f, coll, []) : filterIter(f, entriesIter(coll), {}));
-
-const countBy = curry((f, coll) => reduce((counts, a) => incSel(counts, f(a)), coll, {}));
-
-const groupBy = curry((f, coll) => reduce((group, a) => pushSel(group, f(a), a), coll, {}));
+const groupBy = (f, coll) => reduce((group, a) => pushSel(group, f(a), a), coll, {});
 
 function incSel(parent, k) {
   parent[k] ? parent[k]++ : parent[k] = 1;
@@ -114,17 +109,10 @@ const some = (f, coll) => go(none(f, coll), not);
 
 const every = (f, coll) => go(find(negate(f), coll), isUndefined);
 
-const alterEntriesIter = alterIter(entriesIter);
-
-const mapC = curry((f, coll, limit = Infinity) => {
-  const iter = stepIter(alterEntriesIter(coll), limit);
-  const res = hasIter(coll) ? [] : {};
-  const recur = pipe(
-       _ => mapIter(a => [f(a)], iter, hasIter(coll) ? [] : {}),
-    coll => mapIter(b => b[0], alterEntriesIter(coll), res),
-    res => iter.remain ? recur() : res);
-  return recur();
-});
+const mapC = curry((f, coll) =>
+  go(coll,
+    map(a => ({ val: f(a) })),
+    map(b => b.val)));
 
 const stepIter = (iter, limit) => {
   var i = 0;
@@ -167,6 +155,5 @@ const someC = (f, coll, limit) => go(noneC(f, coll, limit), not);
 
 const everyC = (f, coll, limit) => go(findC(negate(f), coll, limit), isUndefined);
 
-const series = map(call);
-
-const concurrency = mapC(call);
+const series = map(f => f());
+const concurrency = mapC(f => f());
