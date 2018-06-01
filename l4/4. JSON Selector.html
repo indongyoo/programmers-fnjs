@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="../lib/functional.js"></script>
+</head>
+<body>
+
+## 복잡한 값을 조회할 때 중간에 nullable을 만나도 에러 피하기
+
+아래와 같이 접근하게 되면 자바스크립트 에러가 발생하게 됩니다.
+
+<script>
+var obj = { a: { b: { c: [10, 20, 30] } } };
+console.log( obj.a.b.c.d.e );
+// Uncaught TypeError: Cannot read property 'e' of undefined
+</script>
+
+`baseSel` 함수로 만든 객체 조회 함수를 이용하면,
+해당 키에 존재하는 값이 없어 더이상 조회가 여려운 상황에서도 에러를 내지 않고
+`undefined`를 리턴하도록 할 수 있습니다.
+
+<script type="module">
+var obj = { a: { b: { c: [10, 20, 30] } } };
+const sel = baseSel('.');
+console.log( sel('a.b.c.0', obj) );
+// 10
+console.log( sel('a.b.c.2', obj) );
+// 30
+console.log( sel('a.b.c.d.e', obj) );
+// undefined
+</script>
+
+`baseSel` 함수를 통해 다른 구분자를 사용하는 객체 조회 함수를 만들 수 있습니다.
+
+<script type="module">
+var obj = { a: { b: { c: [10, 20, 30] } } };
+const sel2 = baseSel(' > '); // seperator 변경 가능
+console.log( sel2('a > b > c > 0', obj) );
+// 10
+console.log( sel2('a > b > c > 2', obj) );
+// 30
+console.log( sel2('a > b > c > d > e', obj) );
+// undefined
+</script>
+
+## key를 알 수 없을 때, {} # function object로 조회하기
+
+이와 같이 깊은 값을 조회하는 문자열 혹은 값을 JSON Selector라고 부르겠습니다.
+JSON Selector의 몇 가지 문법을 이용하면, 더 유연하게 원하는 깊은 값을 조회할 수 있습니다.
+
+<script>
+const datas = {
+  products: [
+    { id: 1, selected: true, name: 'A 반팔티', price: 12000, discount: 2000, quantity: 3 },
+    { id: 2, selected: false, name: 'B 후드티', price: 30000, discount: 0, quantity: 3 },
+    { id: 3, selected: true, name: 'C 폰케이스', price: 20000, discount: 0, quantity: 2 },
+    { id: 4, selected: false, name: 'D 반팔티', price: 12000, discount: 2000, quantity: 4 },
+    { id: 5, selected: true, name: 'E 쿠션', price: 25000, discount: 5000, quantity: 2 }
+  ]
+};
+</script>
+
+<script type="module">
+
+go(datas,
+  sel('products > 0 > name'),
+  a => console.log(1, a));
+  // 1 "A 반팔티"
+go(datas,
+  sel('products > 3 > name'),
+  a => console.log(2, a));
+  // 2 "D 반팔티"
+go(datas,
+  sel('products > { "id": 3 } > name'),
+  a => console.log(3, a));
+  // 3 "C 폰케이스"
+go(datas,
+  sel('products > #3 > name'), // { "id": 3 } 과 동일
+  a => console.log(4, a));
+  // 4 "C 폰케이스"
+go(datas,
+  sel('products > { "id": 3, "selected": false } > name'),
+  a => console.log(5, a));
+  // 5 undefined
+go(datas,
+  sel('products > { "selected": false } > name'),
+  a => console.log(6, a));
+  // 6 B 후드티
+go(datas,
+  sel('products > { "selected": false, "quantity": 3 } > name'),
+  a => console.log(7, a));
+  // 7 B 후드티
+go(datas,
+  sel('products > { "quantity": 2 } > name'),
+  a => console.log(8, a));
+  // 8 "C 폰케이스"
+</script>
+
+문자열이 아닌, 배열을 통해 실제 객체와 함수를 전달하는 방법도 있습니다.
+
+<script type="module">
+go(datas,
+  sel(['products', p => p.quantity == 2, 'name']),
+  a => console.log(9, a));
+// 9 "C 폰케이스"
+go(datas,
+  sel(['products', { quantity: 2 }, 'name']),
+  a => console.log(10, a));
+// 10 "C 폰케이스"
+</script>
+
+이 JSON Selector는 문자열이기 때문에 더 다양한 곳에서 약속되어 쉽게 사용될 수 있습니다.
+
+</body>
+</html>
