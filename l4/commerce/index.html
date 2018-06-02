@@ -4,9 +4,38 @@
   <meta charset="UTF-8">
   <title></title>
   <script src="../../lib/functional.js"></script>
-  <script src="../../lib/ttl.js"></script>
+  <script src="../../lib/$.js"></script>
+  <script src="./ui/index.js"></script>
 </head>
 <body>
 
+  <script>
+    const { map, log, go, match } = Functional;
+
+    async function test() {
+      if (await Ui.confirm('하하하하하')) {
+        log(1);
+      } else {
+        log(2);
+      }
+    }
+    // test();
+
+    var f1 = pipe(
+      match
+        .case(_ => Ui.confirm('하하하하하')) (
+          _ => askdjasldujl
+        )
+        .else (
+          _ => log('hi 2')
+        ),
+      log
+    ).catch(function() {
+
+    })
+
+    ;
+
+  </script>
 </body>
 </html>
