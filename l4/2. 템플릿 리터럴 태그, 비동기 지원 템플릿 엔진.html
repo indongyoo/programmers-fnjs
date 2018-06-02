@@ -13,7 +13,7 @@
 
 <!--# 템플릿 리터럴, 태그-->
 
-<script>
+<script type="module">
 /*  function f() {
     var a = 10;
     var b = 5;
@@ -22,7 +22,7 @@
     }
   }*/
 var users = [
-  { id: 1, name: 'aa', created_at: new Date() },
+  { id: 1, name: 'aa' },
   { id: 2, name: 'bb' },
   { id: 3, name: 'cc' }
 ];
@@ -92,6 +92,7 @@ async function render() {
   `;
 }
 render();
+
 
 </script>
 
