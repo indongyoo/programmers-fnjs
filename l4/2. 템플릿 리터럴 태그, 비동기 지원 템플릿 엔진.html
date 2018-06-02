@@ -7,9 +7,96 @@
 </head>
 <body>
 
-# 템플릿 리터럴 태그
+<div id="container">
 
-# 비동기 지원 템플릿 엔진
+</div>
+
+<!--# 템플릿 리터럴, 태그-->
+
+<script>
+/*  function f() {
+    var a = 10;
+    var b = 5;
+    return function() {
+      return log(`${a} + ${b} = ${add(a, b)}`);
+    }
+  }*/
+var users = [
+  { id: 1, name: 'aa', created_at: new Date() },
+  { id: 2, name: 'bb' },
+  { id: 3, name: 'cc' }
+];
+var a = 100;
+
+function html(strs, ...vals) {
+  var i = -1;
+  return go(vals,
+    map(identity),
+    vals => reduce((res, str) => `${res}${html.join(vals[++i])}${str}`, strs));
+}
+
+const sum = pipe(map, reduce((a, b) => `${a}${b}`));
+
+log(
+  sum(a => a * 2, [1,2,3])
+);
+
+html.join = v => isArray(v) ? v.join('') : v;
+
+var a = 'A';
+var b = 'B';
+var c = 'C';
+
+// log( html`${a}a${a}b${b}c${c}` );
+/*
+
+document.querySelector('#container').innerHTML = html`
+  <ul>
+    ${sum(u => Promise.resolve(`
+      <li>${u.name}</li>
+    `), users)}
+  </ul>
+`;
+*/
+
+function getUsers() {
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      resolve(users);
+    }, 2000);
+  })
+}
+
+/*
+go(
+  html`
+    <ul>
+      ${go(
+        getUsers(),
+        map(u => `<li>${u.name}</li>`)
+      )}
+    </ul>
+  `,
+  html => document.querySelector('#container').innerHTML = html
+);
+*/
+
+async function render() {
+  document.querySelector('#container').innerHTML = await html`
+    <ul>
+      ${go(
+        getUsers(),
+        map(u => `<li>${u.name == 'aa' ? 'AA' : u.name.toUpperCase()}</li>`)
+      )}
+    </ul>
+  `;
+}
+render();
+
+</script>
+
+
+<!--# 비동기 지원 템플릿 엔진-->
 
 </body>
 </html>

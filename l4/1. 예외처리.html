@@ -8,18 +8,135 @@
 <body>
 
 # try catch
+<script>
+/*  function test() {
+    try {
+      return JSON.parse('{');
+    } catch (e) {
+      console.log('2');
+    } finally {
+      console.log('3');
+      return 10;
+    }
+  }
+  console.log( test() );*/
+</script>
 
 # Promise.reject .catch
+
+<script>
+ /* function a() {}
+
+  function ap() {
+    return new Promise(function(resolve, reject) {
+      // resolve(10);
+      // reject(10);
+      setTimeout(function() {
+        try {
+          // JSON.parse('{');
+        } catch (e) {
+          reject(e);
+        }
+      }, 10);
+    });
+  }
+
+  ap()
+    .then(function(a) {
+      console.log(a, '---1');
+    }, function(a) {
+      console.log(a, '---2');
+    });*/
+</script>
 
 # 비동기 에러는 try catch만으로는 잡을 수 없다.
 
 # async/await를 함께 사용하면 충분할까?
 
+<script>
+  /*function get() {
+    return new Promise(function(resolve, reject) {
+      reject('hi');
+    });
+  }
+
+  async function a() {
+    try {
+      await get();
+      // return [1,2,3].map(get);
+    } catch (e) {
+      console.log('실패함', e);
+    }
+  }
+  a();*/
+</script>
+
 # pipe().catch(), pipe().finally()
+
+<script>
+
+/*var f1 = intercept(
+  /!*a => new Promise(function(resolve, reject) {
+    reject('hi~~~~');
+  }),*!/
+  a => undefined,
+  a => a + 10,
+  a => a + 5
+).catch(function(a) {
+  console.log(a, 'err~~~~');
+  return 10;
+}).finally(
+  res => res + 'fina~~'
+);*/
+
+// go(f1(100), log);
+// go(f1('{'), log);
+
+</script>
 
 # pipe().intercept()(), pipe.extendInterceptor(), pipe().nullable()
 
+<script>
+/*var f1 = intercept(
+  // a => new Promise(function(resolve, reject) {
+  //   reject('hi~~~~');
+  // }),
+  a => ({ status: 200 }),
+  a => a + 10,
+  a => a + 5
+).intercept(a => a && a.status == 200) (
+  a => log(a, 'status 200 ~~')
+).intercept(a => a && a.status == 100) (
+  a => log(a, 'status ~100')
+);
+
+go(f1(100), log);*/
+</script>
+
 # 안전한 합성, 그리고 동기/비동기를 함께 지원하는 함수를 만들어야하는 이유
+
+<script>
+  var users = [
+    { id: 1, age: 30 },
+    { id: 2, age: 32 },
+    { id: 3, age: 34 }
+  ];
+
+  var add = (a, b) => a + b;
+
+  var f1 = intercept(
+    users => users.map(u => Promise.reject(123123)),
+    // map(u => Promise.reject(123123)),
+    reduce(add)
+  ).catch(
+    a => log('redis에 저장해', a),
+    _ => -1
+  ).finally(log);
+
+  f1(users);
+
+</script>
+
 
 # 정리
 
