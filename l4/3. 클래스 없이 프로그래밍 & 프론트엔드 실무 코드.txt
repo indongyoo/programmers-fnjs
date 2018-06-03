@@ -2,5 +2,4 @@
  - Web APIs
  - Alert, Confirm, Loading, Picker
  - 네임스페이스, 모듈화
- - 주소록에서 선택하기
-
+ - 주소록에서 가져오기

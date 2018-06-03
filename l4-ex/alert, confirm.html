@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="lib/functional.js"></script>
+  <script src="lib/$.js"></script>
+  <script src="lib/ttl.js"></script>
+  <script src="lib/ui.js"></script>
+  <script>
+    const { log, match, each } = Functional;
+  </script>
+</head>
+<body>
+
+<p>내용 내용 내용 내용 블라 내용 블라 내용 블라 내용 블라</p>
+<p>내용 내용 내용 내용 블라 내용 블라 내용 블라 내용 블라</p>
+<p>내용 내용 내용 내용 블라 내용 블라 내용 블라 내용 블라</p>
+
+<script>
+  function test1() {
+    if (!confirm('삭제하시겠습니까?')) return log('삭제하지 않음');
+    alert('삭제되었습니다.');
+    log('끗');
+  }
+
+  async function test2() {
+    if (!await Ui.confirm('삭제하시겠습니까?')) return log('삭제하지 않음');
+    await Ui.alert('삭제되었습니다.');
+    log('끗');
+  }
+
+  const test3 = match
+    .case(_ => Ui.confirm('삭제하시겠습니까?')) (
+      _ => Ui.alert('삭제되었습니다.'),
+      _ => log('끗'))
+    .else(
+      _ => log('삭제하지 않음'));
+
+  test2();
+</script>
+
+</body>
+</html>

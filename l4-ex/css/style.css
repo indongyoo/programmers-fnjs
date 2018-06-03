@@ -1,0 +1,30 @@
+.ui_msg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.2);
+}
+.ui_msg .body {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: 300px;
+    height: 160px;
+    background: #fff;
+    border-radius: 16px;
+    text-align: center;
+}
+.ui_msg .msg {
+    margin-top: 56px;
+    margin-bottom: 16px;
+}
+
+.address_book {
+    margin: 50px 20px;
+    border: 1px solid #ccc;
+}

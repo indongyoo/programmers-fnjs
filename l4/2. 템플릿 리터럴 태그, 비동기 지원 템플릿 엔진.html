@@ -7,97 +7,105 @@
 </head>
 <body>
 
-<div id="container">
+<!-- 템플릿 리터럴, 태그 -->
+<script>
+/*  var a = 10;
+  var b = 5;
+  log(`${a} + ${b} = ${a + b}`);
 
-</div>
+  const t1 = (a, b) =>
+    `${a} + ${b} = ${a + b}`;
 
-<!--# 템플릿 리터럴, 태그-->
+  log(t1(20, 30));
 
-<script type="module">
-/*  function f() {
-    var a = 10;
-    var b = 5;
-    return function() {
-      return log(`${a} + ${b} = ${add(a, b)}`);
-    }
-  }*/
-var users = [
-  { id: 1, name: 'aa' },
-  { id: 2, name: 'bb' },
-  { id: 3, name: 'cc' }
-];
-var a = 100;
+  go(t1(30, 30), log);
 
-function html(strs, ...vals) {
-  var i = -1;
-  return go(vals,
-    map(identity),
-    vals => reduce((res, str) => `${res}${html.join(vals[++i])}${str}`, strs));
-}
-
-const sum = pipe(map, reduce((a, b) => `${a}${b}`));
-
-log(
-  sum(a => a * 2, [1,2,3])
-);
-
-html.join = v => isArray(v) ? v.join('') : v;
-
-var a = 'A';
-var b = 'B';
-var c = 'C';
-
-// log( html`${a}a${a}b${b}c${c}` );
-/*
-
-document.querySelector('#container').innerHTML = html`
-  <ul>
-    ${sum(u => Promise.resolve(`
-      <li>${u.name}</li>
-    `), users)}
-  </ul>
-`;
-*/
-
-function getUsers() {
-  return new Promise(function(resolve) {
-    setTimeout(function() {
-      resolve(users);
-    }, 2000);
-  })
-}
-
-/*
-go(
-  html`
-    <ul>
-      ${go(
-        getUsers(),
-        map(u => `<li>${u.name}</li>`)
-      )}
-    </ul>
-  `,
-  html => document.querySelector('#container').innerHTML = html
-);
-*/
-
-async function render() {
-  document.querySelector('#container').innerHTML = await html`
-    <ul>
-      ${go(
-        getUsers(),
-        map(u => `<li>${u.name == 'aa' ? 'AA' : u.name.toUpperCase()}</li>`)
-      )}
-    </ul>
-  `;
-}
-render();
-
-
+  go([10, 20],
+    ([a, b]) =>
+      `${a} + ${b} = ${a + b}`,
+    log);*/
 </script>
 
+<div id="container"></div>
+<div id="container2"></div>
 
-<!--# 비동기 지원 템플릿 엔진-->
+<script>
+  const Tmpl = {};
+  Tmpl.user = {};
+  Tmpl.user.list = users => `
+    <ul>
+      ${users.filter(u => u.age < 30).map(u => `
+        <li>${u.name}</li>
+      `).join('')}
+    </ul>
+  `;
+  Tmpl.user.list2 = users => html`
+    <ul>
+      ${users.filter(u => u.age < 30).map(u => `
+        <li>${u.name}</li>
+      `)}
+    </ul>
+  `;
+
+  var users = [
+    { name: 'ID', age: 30, description: 'aaa' },
+    { name: 'VX', age: 20, description: 'bbb' },
+    { name: 'YB', age: 25 }
+  ];
+
+  document.querySelector('#container').innerHTML = Tmpl.user.list(users);
+  document.querySelector('#container2').innerHTML = Tmpl.user.list2(users);
+
+  function html(strs, ...vals) {
+    return go(vals,
+      map(v => isArray(v) ? v.join('') : isUndefined(v) ? '' : v),
+      (vals, i=0) => reduce((res, str) => `${res}${vals[i++]}${str}`, strs));
+  }
+</script>
+
+<script>
+  log(html`${1}a${[1,2,3,4]}b${undefined}`);
+</script>
+
+<!-- 비동기 지원 템플릿 엔진 -->
+
+<div id="container3"></div>
+
+<script>
+  function getUsers() {
+    return new Promise(resolve => {
+      setTimeout(function() {
+        resolve(users);
+      }, 1500);
+    })
+  }
+
+  /*go(
+    html`
+      <ul>
+        ${go(
+          getUsers(),
+          filter(u => u.age < 30),
+          map(u => `<li>${u.name}</li>`)
+        )}
+      </ul>
+    `,
+    html => document.querySelector('#container3').innerHTML = html
+  );*/
+
+  async function render() {
+    document.querySelector('#container3').innerHTML = await html`
+      <ul>
+        ${go(
+          getUsers(),
+          filter(u => u.age < 30),
+          map(u => html`<li>${u.name} ${u.description}</li>`)
+        )}
+      </ul>
+    `;
+  }
+  render();
+</script>
 
 </body>
 </html>

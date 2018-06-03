@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="lib/functional.js"></script>
+  <script src="lib/$.js"></script>
+  <script src="lib/ttl.js"></script>
+  <script src="lib/ui.js"></script>
+  <script src="app/index.js"></script>
+  <script src="app/AddressBook.js"></script>
+  <script>
+    const { log, go, map, tap } = Functional;
+    const { html } = Ttl;
+    const { AddressBook } = App;
+  </script>
+</head>
+<body>
+
+
+<div class="page">
+  <div class="address">
+    <button type="button" class="import">주소록에서 가져오기</button>
+    <div class="controls">
+      <input type="text" class="postcode" placeholder="우편번호를 입력해주세요.">
+      <input type="text" class="address" placeholder="주소를 입력해주세요.">
+    </div>
+  </div>
+</div>
+
+
+<script>
+  const addressEl = $('.address');
+
+  go(addressEl,
+    $.find('.import'),
+    $.on('click', e => go(
+      AddressBook.import(),
+      address => {
+        if (!address) return;
+        go(
+          addressEl,
+          $.find('.postcode'),
+          $.setVal(address.postcode));
+        go(
+          addressEl,
+          $.find('.address'),
+          $.setVal(address.address));
+      }
+    ))
+  );
+</script>
+
+</body>
+</html>

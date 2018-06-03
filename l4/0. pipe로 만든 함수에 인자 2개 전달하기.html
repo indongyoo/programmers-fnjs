@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="functional.js"></script>
+</head>
+<body>
+
+<script>
+const add = (a, b) => a + b;
+const sub5 = a => a - 5;
+const mult2 = a => a * 2;
+
+const f1 = (..._) => go(add(..._), sub5, mult2);
+
+log(f1(10, 10));
+
+const f2 = pipe(add, sub5, mult2);
+
+log(f2(10, 10));
+</script>
+
+<script>
+  const f3 = pipe(
+    add,
+    sub5,
+    a => add(a, 20),
+    mult2);
+
+  const f5 = (a, b) => [a * 2, b * 2];
+
+  const f4 = pipe(
+    f5,
+    reduce(add),
+    // ([..._]) => add(..._),
+    // ([a, b]) => add(a, b),
+    sub5,
+    mult2);
+
+  log(f4(10, 20));
+</script>
+
+</body>
+</html>
