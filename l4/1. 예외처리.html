@@ -291,7 +291,7 @@ var f3 = pipeT(
   // JSON.parse,
   map(u => Promise.resolve(u.age)),
   reduce((a, b) => a + b)
-).addInterceptor(isUndefined) (
+).addInterceptor(a => a.length == 0) (
   _ => 0
 ).finally(
   log
