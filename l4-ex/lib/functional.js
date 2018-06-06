@@ -39,6 +39,24 @@
     return acc;
   });
 
+  class Break {
+    constructor(value) { this.value = value; }
+    static of(value) { return new Break(value); }
+  }
+
+  const reduceB = curry(function(f, coll, acc) {
+    const iter = collIter(coll);
+    return go(
+      arguments.length == 2 ? iter.next().value : acc,
+      function recur(acc) {
+        var cur;
+        while (!(cur = iter.next()).done && !(acc instanceof Break))
+          if ((acc = f(acc, cur.value, Break.of)) instanceof Promise)
+            return acc.then(recur);
+        return acc instanceof Break ? acc.value : acc;
+      });
+  });
+
   const each = curry((f, coll) => go(reduce((_, a) => f(a), coll, null), _ => coll));
 
   function push(arr, v) {
@@ -89,6 +107,39 @@
   const pipe = (f, ...fs) => (..._) => reduce(call2, fs, f(..._));
 
   const tap = (...fs) => arg => go(arg, ...fs, _ => arg);
+
+  function pipeT(f, ...fs) {
+    var catchF = tap(console.error), finallyF = identity, interceptors = [];
+
+    const hook = (f, args) => go(
+      find(itc => itc.predi(...args), interceptors),
+      itc => itc ?
+        Break.of(itc.body(...args)) :
+        tryCatch(f, args, e => Break.of(catchF(e))));
+
+    fs.push(identity);
+    return Object.assign((...args) => go(
+      reduceB((arg, f) => hook(f, [arg]), fs, hook(f, args)),
+      finallyF
+    ), {
+      catch(...fs) {
+        catchF = pipe(...fs);
+        return this;
+      },
+      finally(...fs) {
+        finallyF = pipe(...fs);
+        return this;
+      },
+      addInterceptor(...fs) {
+        var itc = { predi: pipe(...fs) };
+        return (...fs) => {
+          itc.body = pipe(...fs);
+          interceptors.push(itc);
+          return this;
+        }
+      }
+    })
+  }
 
   const not = a => !a;
   const negate = f => pipe(f, not);
@@ -281,7 +332,8 @@
     valuesIter, entriesIter, reverseIter,
     collIter,
     reduce, countBy, groupBy,
-    go, pipe, tap,
+    reduceB, Break,
+    go, pipe, tap, pipeT,
     each,
     push, set,
     mapIter, filterIter,
@@ -297,4 +349,3 @@
   };
   window.Functional = Functional;
 } ();
-

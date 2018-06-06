@@ -38,6 +38,24 @@ const reduce = curry(function(f, coll, acc) {
   return acc;
 });
 
+class Break {
+  constructor(value) { this.value = value; }
+  static of(value) { return new Break(value); }
+}
+
+const reduceB = curry(function(f, coll, acc) {
+  const iter = collIter(coll);
+  return go(
+    arguments.length == 2 ? iter.next().value : acc,
+    function recur(acc) {
+      var cur;
+      while (!(cur = iter.next()).done && !(acc instanceof Break))
+        if ((acc = f(acc, cur.value, Break.of)) instanceof Promise)
+          return acc.then(recur);
+      return acc instanceof Break ? acc.value : acc;
+    });
+});
+
 function push(arr, v) {
   arr.push(v);
   return arr;
@@ -84,6 +102,40 @@ const values = coll =>
 const go = (...coll) => reduce(call2, coll);
 
 const pipe = (f, ...fs) => (..._) => reduce(call2, fs, f(..._));
+
+const tap = (...fs) => arg => go(arg, ...fs, _ => arg);
+
+function pipeT(f, ...fs) {
+  var catchF = tap(console.error), interceptors = [];
+
+  const hook = (f, args) => go(
+    find(itc => itc.predi(...args), interceptors),
+    itc => itc ?
+      Break.of(itc.body(...args)) :
+      tryCatch(f, args, e => Break.of(catchF(e))));
+
+  fs.push(identity);
+  return Object.assign((...args) => reduceB(
+    (arg, f) => hook(f, [arg]), fs, hook(f, args)
+  ), {
+    catch(..._) {
+      catchF = pipe(..._);
+      return this;
+    },
+    finally(..._) {
+      fs.push(pipe(..._));
+      return this;
+    },
+    addInterceptor(..._) {
+      var itc = { predi: pipe(..._) };
+      return (..._) => {
+        itc.body = pipe(..._);
+        interceptors.push(itc);
+        return this;
+      }
+    }
+  })
+};
 
 const not = a => !a;
 const negate = f => pipe(f, not);
