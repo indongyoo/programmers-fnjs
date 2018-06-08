@@ -105,6 +105,15 @@ const pipe = (f, ...fs) => (..._) => reduce(call2, fs, f(..._));
 
 const tap = (...fs) => arg => go(arg, ...fs, _ => arg);
 
+function tryCatch(tryF, args, catchF) {
+  try {
+    var res = tryF(...args);
+    return res instanceof Promise ? res.catch(catchF) : res;
+  } catch (e) {
+    return catchF(e);
+  }
+}
+
 function pipeT(f, ...fs) {
   var catchF = tap(console.error), interceptors = [];
 
@@ -247,7 +256,7 @@ const findWhere = curry((w, coll) => find(isMatch(w), coll));
 function baseMatch(targets) {
   var cbs = [];
 
-  function _evl() {
+  function evl() {
     return go(cbs,
       find(pb => { return pb._case(...targets); }),
       pb => pb._body(...targets))
@@ -266,7 +275,7 @@ function baseMatch(targets) {
 
   _case.else = function() {
     _case(_=> true) (...arguments);
-    return targets ? _evl() : (...targets2) => ((targets = targets2), _evl());
+    return targets ? evl() : (...targets2) => ((targets = targets2), evl());
   };
 
   return _case;
