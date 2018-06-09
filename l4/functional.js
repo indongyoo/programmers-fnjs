@@ -105,6 +105,15 @@ const pipe = (f, ...fs) => (..._) => reduce(call2, fs, f(..._));
 
 const tap = (...fs) => arg => go(arg, ...fs, _ => arg);
 
+function tryCatch(tryF, args, catchF) {
+    try {
+        const res = tryF(...args);
+        return res instanceof Promise ? res.catch(catchF) : res;
+    } catch (error) {
+        catchF(error);
+    }
+}
+
 function pipeT(f, ...fs) {
   var catchF = tap(console.error), interceptors = [];
 
