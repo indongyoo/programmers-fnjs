@@ -4,7 +4,7 @@ require('../../module/back/root/Orm');
 const fs = require('fs');
 
 (async () => {
-  const { SELECT, FROM, WHERE, INSERT, mergeQuery } = Orm;
+  const { SELECT, FROM, WHERE, INSERT } = Orm;
   const { query, transaction } = await Orm.connect();
 
   const hasMigrations = pipe(

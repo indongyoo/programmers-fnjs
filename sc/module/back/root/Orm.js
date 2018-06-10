@@ -5,11 +5,11 @@
     return typeof a == 'string';
   }
 
-  function mergeQuery(...qs) {
-    return mergeQueryArr(qs);
+  function pgArgs(...qs) {
+    return pgArgsArr(qs);
   }
 
-  function mergeQueryArr(qs) {
+  function pgArgsArr(qs) {
     return [
       go(
         qs,
@@ -28,7 +28,7 @@
 
   function query(pool, qs) {
     return go(
-      pool.query(...mergeQueryArr(qs)),
+      pool.query(...pgArgsArr(qs)),
       match
         .case({command: 'SELECT'}) (res => res.rows)
         .else (_ => _)
@@ -151,6 +151,6 @@
     FROM,
     WHERE,
     INSERT,
-    mergeQuery
+    pgArgs
   };
 } (global);
