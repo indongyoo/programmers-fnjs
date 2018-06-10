@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="Functional.js"></script>
+  <script>
+    Object.assign(window, Functional);
+  </script>
+</head>
+<body>
+
+<script>
+  var users = [
+    { id: 1, name: 'AA', age: 30},
+    { id: 2, name: 'AA', age: 31},
+    { id: 4, name: 'BB', age: 31}
+  ];
+
+  var posts = [
+    { id: 1, body: 'AA', user_id: 1 },
+    { id: 2, body: 'AA', user_id: 2 },
+    { id: 4, body: 'BB', user_id: 2 }
+  ];
+
+  var comments = [
+    { id: 1, body: 'AA', post_id: 2, user_id: 1 },
+    { id: 2, body: 'AA', post_id: 2, user_id: 2 },
+    { id: 4, body: 'BB', post_id: 4, user_id: 2 }
+  ];
+
+  var products = [];
+
+  var users_products = [
+    { user_id: 1, product_id: 2 }
+  ];
+
+  var payments = [
+    { type: '신용' },
+    { type: '신용' },
+    { type: '신용' },
+  ];
+</script>
+
+
+</body>
+</html>

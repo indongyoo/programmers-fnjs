@@ -1,25 +1,34 @@
 !function(Root) {
   const { Pool } = require('pg');
 
+  function isString(a) {
+    return typeof a == 'string';
+  }
+
   function mergeQuery(...qs) {
-    return {
-      text: go(qs,
-        map(q => q.text),
+    return mergeQueryArr(qs);
+  }
+
+  function mergeQueryArr(qs) {
+    return [
+      go(
+        qs,
+        map(q => isString(q) ? q : q.text),
         join(' '),
         text => text
           .split('??')
           .reduce((a, b, i) => `${a}$${i}${b}`)),
-      values: go(qs,
+      go(
+        qs,
+        reject(isString),
         map(q => q.values),
         cat)
-    };
+    ];
   }
 
   function query(pool, qs) {
-    const { text, values } = mergeQuery(...qs);
-
     return go(
-      pool.query(text, values),
+      pool.query(...mergeQueryArr(qs)),
       match
         .case({command: 'SELECT'}) (res => res.rows)
         .else (_ => _)
