@@ -1,14 +1,14 @@
-require('../../module/share/root/Functional');
+require('../../module/share/base/Functional');
 Object.assign(global, Functional);
-require('../../module/back/root/Orm');
+require('../../module/back/orm/Orm');
 const fs = require('fs');
 
 (async () => {
   const { SELECT, FROM, WHERE, INSERT } = Orm;
-  const { query, transaction } = await Orm.connect();
+  const { QUERY, TRANSACTION } = await Orm.CONNECT();
 
   const hasMigrations = pipe(
-    _ => query(
+    _ => QUERY(
       SELECT `count(*) > 0 as has`,
       FROM `pg_tables`,
       WHERE `${{ schemaname: 'public', tablename: 'migrations' }}`
@@ -17,7 +17,7 @@ const fs = require('fs');
     isMatch({has: true})
   );
 
-  const createMigrations = _ => query(`
+  const createMigrations = _ => QUERY(`
     CREATE TABLE migrations (
       id          serial PRIMARY KEY,
       name        varchar(255) NOT NULL,
@@ -31,7 +31,7 @@ const fs = require('fs');
   ) ();
 
   const migrations = await go(
-    query(
+    QUERY(
       SELECT `name`,
       FROM `migrations`
     ),
@@ -43,15 +43,15 @@ const fs = require('fs');
     reject(contains(migrations))
   );
 
-  const { queryT, COMMIT, ROLLBACK } = await transaction();
+  const { QUERY_T, COMMIT, ROLLBACK } = await TRANSACTION();
 
   const migration = pipeT(
     map(fn => `./list/${fn}`),
     map(require),
-    each(f => f(queryT)),
+    each(f => f(QUERY_T)),
     _ => files,
     map(name => ({ name/*, created_at: new Date()*/ })),
-    files => queryT(
+    files => QUERY_T(
       INSERT `migrations` (files)
     ),
     COMMIT,

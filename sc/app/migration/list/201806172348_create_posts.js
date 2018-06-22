@@ -1,8 +1,10 @@
 module.exports = function(QUERY_T) {
   return QUERY_T(`
-    CREATE TABLE posts (
+    CREATE TABLE comments (
       id          serial PRIMARY KEY,
-      name        varchar(255) NOT NULL,
+      body        text,
+      user_id     integer REFERENCES users,
+      post_id     integer REFERENCES posts,
       created_at  timestamptz,
       updated_at  timestamptz
     );

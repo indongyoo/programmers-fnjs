@@ -30,16 +30,16 @@
 <div id="container2"></div>
 
 <script>
-  const Tmpl = {};
-  Tmpl.user = {};
-  Tmpl.user.list = users => `
+  const Template = {};
+  Template.user = {};
+  Template.user.list = users => `
     <ul>
       ${users.filter(u => u.age < 30).map(u => `
         <li>${u.name}</li>
       `).join('')}
     </ul>
   `;
-  Tmpl.user.list2 = users => html`
+  Template.user.list2 = users => html`
     <ul>
       ${users.filter(u => u.age < 30).map(u => `
         <li>${u.name}</li>
@@ -53,8 +53,8 @@
     { name: 'YB', age: 25 }
   ];
 
-  document.querySelector('#container').innerHTML = Tmpl.user.list(users);
-  document.querySelector('#container2').innerHTML = Tmpl.user.list2(users);
+  document.querySelector('#container').innerHTML = Template.user.list(users);
+  document.querySelector('#container2').innerHTML = Template.user.list2(users);
 
   function html(strs, ...vals) {
     return go(vals,

@@ -5,11 +5,11 @@
     return typeof a == 'string';
   }
 
-  function pgArgs(...qs) {
-    return pgArgsArr(qs);
+  function PG_ARGS(...qs) {
+    return PG_ARGS_ARR(qs);
   }
 
-  function pgArgsArr(qs) {
+  function PG_ARGS_ARR(qs) {
     return [
       go(
         qs,
@@ -28,20 +28,25 @@
 
   function query(pool, qs) {
     return go(
-      pool.query(...pgArgsArr(qs)),
+      PG_ARGS_ARR(qs),
+      tap(log),
+      qs => pool.query(...qs),
       match
         .case({command: 'SELECT'}) (res => res.rows)
+        .case({command: 'INSERT'}) (res => res.rows)
         .else (_ => _)
     );
   }
 
-  async function connect(info) {
+  async function CONNECT(info) {
     const pool = await new Pool(info);
+    function QUERY(...qs) {
+      return query(pool, qs);
+    }
     return {
-      query(...qs) {
-        return query(pool, qs);
-      },
-      async transaction() {
+      QUERY,
+      QUERY1: pipe(QUERY, first),
+      async TRANSACTION() {
         const client = await pool.connect();
         await client.query('BEGIN');
         const end = query => _ => series([
@@ -49,14 +54,14 @@
           _ => client.release()
         ]);
         return {
-          queryT(...qs) {
+          QUERY_T(...qs) {
             return query(client, qs);
           },
           COMMIT: end('COMMIT'),
           ROLLBACK: end('ROLLBACK')
         }
       }
-    };
+    }
   }
 
   function SELECT(strs, ...vals) {
@@ -126,31 +131,38 @@
         join(', '),
         a => `(${a})`);
 
-      const values = go(
+      const valsText = go(
         objects,
         map(pipe(
-          Object.values,
-          map(quote),
+          map(_ => '??'),
           join(', '),
           a => `(${a})`
         )),
         join(', '));
 
-      return `INSERT INTO ${table} 
-          ${cols} 
-        VALUES 
-          ${values}`;
+      const vals = go(
+        objects,
+        map(values),
+        cat);
+
+      return {
+        text: `INSERT INTO ${table} ${cols} VALUES ${valsText}`,
+        values: vals
+      };
     }
   }
+
+  const RALL = 'RETURNING *';
 
   // const { query, transaction } = Orm.connection();
 
   Root.Orm = {
-    connect,
+    CONNECT,
     SELECT,
     FROM,
     WHERE,
     INSERT,
-    pgArgs
+    PG_ARGS,
+    RALL
   };
 } (global);

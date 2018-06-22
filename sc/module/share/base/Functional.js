@@ -1,6 +1,8 @@
 !function(Root) {
   const identity = a => a;
 
+  function noop() {}
+
   const call = (f, arg) => f(arg);
 
   const call2 = (arg, f) => f(arg);
@@ -59,12 +61,13 @@
 
   const each = curry((f, coll) => go(reduce((_, a) => f(a), coll, null), _ => coll));
 
-  function push(arr, v) {
-    arr.push(v);
-    return arr;
-  }
+  const push = curry((v, arr) => (arr.push(v), arr));
 
-  const set = (obj, k, v) => (obj[k] = v, obj);
+  const push2 = curry((arr, v) => (arr.push(v), v));
+
+  const set = curry(([k, v], obj) => (obj[k] = v, obj));
+
+  const set2 = curry((obj, kv) => (set(kv, obj), kv));
 
   const baseMFIter = (f1, f2) => curry((f, iter, acc = (hasIter(iter) ? [] : {})) =>
     Array.isArray(acc) ?
@@ -72,12 +75,12 @@
       reduce((res, [k, a]) => go(a, f, b => f2(res, k, a, b)), iter, acc));
 
   const mapIter = baseMFIter(
-    (res, a, b) => push(res, b),
-    (res, k, a, b) => set(res, k, b));
+    (res, a, b) => push(b, res),
+    (res, k, a, b) => set([k, b], res));
 
   const filterIter = baseMFIter(
-    (res, a, b) => b ? push(res, a) : res,
-    (res, k, a, b) => b ? set(res, k, a) : res);
+    (res, a, b) => b ? push(a, res) : res,
+    (res, k, a, b) => b ? set([k, a], res) : res);
 
   const map = curry((f, coll) =>
     hasIter(coll) ? mapIter(f, coll, []) : mapIter(f, entriesIter(coll), {}));
@@ -88,6 +91,8 @@
   const countBy = curry((f, coll) => reduce((counts, a) => incSel(counts, f(a)), coll, {}));
 
   const groupBy = curry((f, coll) => reduce((group, a) => pushSel(group, f(a), a), coll, {}));
+
+  const indexBy = curry((f, coll) => reduce((index, a) => set([f(a), a], index), coll, {}));
 
   function incSel(parent, k) {
     parent[k] ? parent[k]++ : parent[k] = 1;
@@ -117,7 +122,7 @@
 
   const pipe = (f, ...fs) => (..._) => reduce(call2, fs, f(..._));
 
-  const tap = (...fs) => arg => go(arg, ...fs, _ => arg);
+  const tap = (f, ...fs) => (arg, ...args) => go(f(arg, ...args), ...fs, _ => arg);
 
   function tryCatch(tryF, args, catchF) {
     try {
@@ -167,6 +172,18 @@
   const reject = curry((f, coll) => filter(negate(f), coll));
 
   const compact = filter(identity);
+
+  const contains = curry((list, target) => list.includes(target));
+
+  const pick = curry((ks, obj) => reduce((acc, k) => {
+    if (has(k, obj)) acc[k] = obj[k];
+    return acc;
+  }, ks, {}));
+
+  const omit = curry((ks, obj) => reduce((acc, [k, v]) => {
+    if (!contains(ks, k)) acc[k] = v;
+    return acc;
+  }, entriesIter(obj), {}));
 
   const findVal = curry((f, coll) => {
     const iter = collIter(coll);
@@ -256,12 +273,16 @@
 
   const isArray = Array.isArray;
 
+  const isString = a => typeof a == 'string';
+
   const isMatch = curry((a, b) =>
     typeof a == 'function' ? !!a(b)
     :
     isArray(a) && isArray(b) ? every(v => b.includes(v), a)
     :
     typeof b == 'object' ? every(([k, v]) => b[k] == v, entriesIter(a))
+    :
+    a instanceof RegExp ? b.match(a)
     :
     a == b
   );
@@ -326,6 +347,9 @@
   const flip = f => (..._) => f(..._.reverse());
 
   const baseSel = sep => curry((selector, acc) =>
+    !selector ?
+      acc
+    :
     isArray(selector) ?
       reduce(flip(baseSel(sep)), selector, acc)
     :
@@ -333,16 +357,16 @@
       findWhere(selector, acc)
     :
     reduce(
-      (acc, key, tk = key.trim(), s = tk[0]) =>
+      (acc, key, s = key[0]) =>
         !acc ? acc :
-        s == '#' ? findWhere({ id: tk.substr(1) }, acc) :
-        s == '[' || s == '{' ? findWhere(JSON.parse(tk), acc) :
-        acc[tk],
+        s == '#' ? findWhere({ id: key.substr(1) }, acc) :
+        s == '[' || s == '{' ? findWhere(JSON.parse(key), acc) :
+        acc[key],
       selector.split(sep),
       acc)
   );
 
-  const sel = baseSel(' > ');
+  const sel = baseSel(/\s*>\s*/);
 
   const first = arr => arr[0];
 
@@ -359,32 +383,42 @@
     return reduce((res, str) => `${res}${vals[i++]}${str}`, strs);
   };
 
-  const contains = curry((list, target) => list.includes(target));
+  const merge = coll => reduce((acc, obj) =>
+    reduce(
+      (acc, [k, v]) => isArray(v) ? catSel(acc, k, v) : addSel(acc, k, v),
+      entriesIter(obj),
+      acc),
+    coll,
+    {});
 
-  const merge = coll => reduce((acc, obj) => {
-    return reduce((acc, [k, v]) => {
-      return isArray(v) ? catSel(acc, k, v) : addSel(acc, k, v);
-    },  entriesIter(obj), acc);
-  }, coll, {});
+  const baseExtend = set => (obj, ...objs) =>
+    reduce(flip(reduce(set)), map(entriesIter, objs), obj);
+
+  const has = curry((k, obj) => obj.hasOwnProperty(k));
+
+  const extend = baseExtend(tap(set2));
+  const defaults = baseExtend(tap((obj, kv) => has(kv[0], obj) || set2(obj, kv)));
 
   Root.Functional = {
-    identity, not, negate,
-    isUndefined, hasIter, isArray,
-    isMatch,
+    Root,
+    identity, noop, not, negate,
+    isUndefined, hasIter, isArray, isString,
+    isMatch, has, contains,
     call, call2,
     clear, log,
     curry, flip,
     valuesIter, entriesIter, reverseIter,
     collIter,
-    reduce, countBy, groupBy,
+    reduce, countBy, groupBy, indexBy, join,
     reduceB, Break,
     go, pipe, tap, pipeT, tryCatch,
     each,
-    push, set,
+    push, push2,
+    set, set2,
     mapIter, filterIter,
     map, values,
     mapC,
-    filter, reject, compact,
+    filter, reject, compact, pick, omit,
     findVal, find, none, some, every, findWhere,
     findValC, findC, noneC, someC, everyC,
     series, concurrency,
@@ -392,9 +426,6 @@
     baseSel, sel,
     first,
     nodeF,
-    join,
-    mix,
-    contains,
-    merge
+    mix, merge, extend, defaults,
   };
 } (typeof window != 'undefined' ? window : global);
