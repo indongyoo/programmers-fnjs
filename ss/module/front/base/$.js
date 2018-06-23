@@ -21,6 +21,8 @@
 
   $.append = curry((parent, child) => parent.appendChild(child));
 
+  $.prepend = curry((parent, child) => parent.insertBefore(child, parent.firstChild));
+
   $.on = function(el, event, sel, f, ...opts) {
     if (typeof el == 'string') return el => $.on(el, ...arguments);
     if (typeof sel != 'string') return el.addEventListener(event, sel, f);
@@ -57,28 +59,6 @@
     (_) => extend(..._)
   );
 
-  $.Status = {};
-
-  $.status = s => sel($.statusSel(s), $.Status);
-
-  $.statusSel = s => isString(s) ? s : $.elToStatusSel(s);
-
-  $.elToStatusSel = (el, s2 = '') =>
-    match ($.attr('status', el))
-      .case(a => a) (
-        s1 => s1 + s2,
-        match
-          .case(/^\s*>/) (s => $.elToStatusSel(el.parentNode, s))
-          .else (a => a))
-      .else (
-        _ => el,
-        $.closest('[status]'),
-        $.elToStatusSel);
-
-  function addQuery(url, query) {
-    return url + (url.indexOf('?') == -1 ? '?' : '') + (query || '');
-  }
-
   const resJSON = function(res) {
     return res.ok ? res.json() : Promise.reject(res);
   };
@@ -95,9 +75,6 @@
     }, fetchBaseOpt)),
     resJSON));
 
-  $.get = curry((url, data) => go(
-    fetch(addQuery(url, $.param(data)), fetchBaseOpt),
-    resJSON));
   $.post = fetchWithBody('POST');
   $.put = fetchWithBody('PUT');
   $.delete = $.del = fetchWithBody('DELETE');

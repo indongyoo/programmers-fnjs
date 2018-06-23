@@ -1,0 +1,22 @@
+{
+  "name": "ss",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "migrate": "PGUSER=indongyoo PGHOST=localhost PGPASSWORD= PGDATABASE=ss PGPORT=5432 node app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "compression": "^1.7.2",
+    "connect-redis": "^3.3.3",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "morgan": "^1.9.0",
+    "pg": "^7.4.3",
+    "stylus": "^0.54.5"
+  }
+}
