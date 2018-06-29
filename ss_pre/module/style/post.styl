@@ -1,0 +1,98 @@
+a.name
+  font-weight bold
+  color #000
+  text-decoration none
+
+.post_item
+  position relative
+  border 1px solid #ccc
+  border-radius 4px
+  margin-bottom 16px
+  >
+    .user
+      padding 16px
+      border-bottom 1px solid #ccc
+    p
+      margin 16px 16px 8px
+      padding 0
+    .updated_at
+      margin 16px
+      font-size 11px
+      color #888
+    .options
+      position absolute
+      top 16px
+      right 16px
+
+.comment_list
+  margin 8px 16px
+
+.comment_item
+  position relative
+  p
+    margin 8px 0
+    padding 0
+  .options
+    position absolute
+    top 0px
+    right 0px
+
+.comment_editor
+  margin 8px 16px 0
+  border-top 1px solid #ccc
+  input
+    border 0
+    padding 16px 1px
+    outline none
+    font-size 13px
+
+.post_editor
+  position fixed
+  top 0
+  left 0
+  right 0
+  bottom 0
+  background rgba(0, 0, 0, 0.2)
+  .container
+    position absolute
+    top 100px
+    left 0
+    right 0
+    bottom 100px
+    width 600px
+    margin auto
+    background #fff
+    border-radius 8px
+    .header
+      position absolute
+      top 0
+      left 0
+      right 0
+      height 48px
+      border-bottom 1px solid #ccc
+      text-align center
+      h2
+        margin 0
+        padding 0
+        height 48px
+        line-height 48px
+      button
+        position absolute
+        top 16px
+        &.cancel
+          left 16px
+        &.done
+          right 16px
+    .body
+      position absolute
+      top 49px
+      left 0
+      right 0
+      bottom 0
+      box-sizing border-box
+      padding 16px
+      textarea
+        width 100%
+        height 80px
+        box-sizing border-box
+        font-size 16px

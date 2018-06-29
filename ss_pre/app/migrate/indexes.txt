@@ -1,0 +1,2 @@
+CREATE INDEX posts_user_id ON posts USING btree (user_id);
+CREATE INDEX posts_tags ON posts USING GIN (tags);
