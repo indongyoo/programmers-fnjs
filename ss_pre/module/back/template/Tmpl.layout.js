@@ -36,9 +36,6 @@
         <div class="header">
           <a href="/logout">로그아웃</a>
         </div>
-        <div class="options">
-          <button type="button" class="create_post">글 작성</button>
-        </div>
         <div class="body">${body}</div>
         <div class="footer"></div>
       `,

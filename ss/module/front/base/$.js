@@ -75,6 +75,11 @@
     }, fetchBaseOpt)),
     resJSON));
 
+  $.get = curry((url, data) => go(
+    fetch(url + '?' + $.param(data), fetchBaseOpt),
+    resJSON
+  ));
+
   $.post = fetchWithBody('POST');
   $.put = fetchWithBody('PUT');
   $.delete = $.del = fetchWithBody('DELETE');
@@ -85,6 +90,26 @@
     map(pipe(map(encodeURIComponent), ([k, v]) => `${k}=${v}`)),
     str => str.join('&').replace(/%20/g, '+')
   );
+
+  $.Status = {};
+
+  $.status = selector => sel($.statusSelector(selector), $.Status.data);
+
+  $.statusSelector = sel => isString(sel) ? sel : $.elToStatusSelector(sel);
+
+  $.elToStatusSelector = (el, s2 = '') =>
+    match ($.attr('status', el))
+      .case (a => a) (
+        match
+          .case (/\s*>/) (
+            s => $.elToStatusSelector(el.parentNode, s + s2))
+          .else (s => s + s2)
+      )
+      .else (
+        _ => el,
+        $.closest('[status]'),
+        el => $.elToStatusSelector(el, s2)
+      );
 
   window.$ = $;
 } ();

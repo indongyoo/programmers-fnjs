@@ -3,7 +3,7 @@ global.Post = {};
 Post.SELECT = ({ limit = 5, offset = 0 }, login_user_id, tag) => go(
     ASSOCIATE `
       posts ${[
-        tag ? Q`WHERE tags ?| ${['a']}` : '', 
+        tag ? Q`WHERE tags ? ${tag}` : '', 
         Q`ORDER BY ID DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`
       ]}
         - user

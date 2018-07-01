@@ -1,5 +1,6 @@
 const bodyToTags = body => go(
-  body.match(/#[^\s]+/gm),
+  body.match(/#[^\s,;.]+/gm),
+  compact,
   map(k => k.substr(1)),
   JSON.stringify
 );

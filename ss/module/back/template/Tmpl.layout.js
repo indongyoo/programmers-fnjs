@@ -14,6 +14,7 @@
         <script src="/share/base/global.js"></script>
         <script src="/share/base/Functional.js"></script>
         <script>Object.assign(window, Functional);</script>
+        <script src="/share/base/Dates.js"></script>
         <script src="/front/base/$.js"></script>
         <script src="/share/base/Ttl.js"></script>
         <script>global.html = Ttl.html;</script>

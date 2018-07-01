@@ -16,6 +16,13 @@ App.post('/api/posts', (req, res) => {
   )
 });
 
+App.get('/api/posts', async (req, res) => {
+  go(
+    req.query,
+    Post.SELECT,
+    res.json);
+});
+
 App.post('/api/comments', (req, res) => {
   const user = req.session.user;
   go(

@@ -74,7 +74,8 @@
               $.setHtml(Tmpl.post.tags(body))),
             $.find('.updated_at'),
             $.setText(Dates.word(updated_at))
-          ));
+          )
+        );
       }),
 
       $.on('click', '.more', e => {

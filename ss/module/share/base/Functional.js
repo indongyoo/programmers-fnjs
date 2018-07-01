@@ -88,6 +88,19 @@
   const filter = curry((f, coll) =>
     hasIter(coll) ? filterIter(f, coll, []) : filterIter(f, entriesIter(coll), {}));
 
+  const uniqueBy = curry((f, coll) => {
+    const s = new Set();
+    return go(
+      coll,
+      filter(a => go(
+        a,
+        f,
+        b => s.has(b) ? false : s.add(b)
+      )));
+  });
+
+  const unique = uniqueBy(a => a);
+
   const countBy = curry((f, coll) => reduce((counts, a) => incSel(counts, f(a)), coll, {}));
 
   const groupBy = curry((f, coll) => reduce((group, a) => pushSel(group, f(a), a), coll, {}));
@@ -370,6 +383,8 @@
 
   const first = arr => arr[0];
 
+  const last = arr => arr[arr.length-1];
+
   const nodeF = f => (..._) =>
     new Promise((resolve, reject) =>
       f(..._, (err, val) => err ? reject(err) : resolve(val)
@@ -413,18 +428,19 @@
     reduceB, Break,
     go, pipe, tap, pipeT, tryCatch,
     each,
-    push, push2,
+    push, push2, pushSel,
     set, set2,
     mapIter, filterIter,
     map, values,
     mapC,
     filter, reject, compact, pick, omit,
+    unique, uniqueBy,
     findVal, find, none, some, every, findWhere,
     findValC, findC, noneC, someC, everyC,
     series, concurrency,
     match, or, and,
     baseSel, sel,
-    first,
+    first, last,
     nodeF,
     mix, merge, extend, defaults,
   };

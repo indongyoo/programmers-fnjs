@@ -5,11 +5,14 @@
   require('../../module/share/base/global');
   require('../../module/share/base/Functional');
   Object.assign(global, Functional);
+  require('../../module/share/base/Dates');
   require('../../module/share/base/Ttl');
   global.html = Ttl.html;
   require('../../module/share/template/Tmpl');
   require('../../module/back/template/Tmpl.layout');
   require('../../module/share/template/Tmpl.post');
+
+  require('../../module/back/post/Post');
 
   var Path = require('path');
   var session = require('express-session');
@@ -43,15 +46,17 @@
   }));
 
   require('../../module/back/orm/Orm');
-  const { QUERY, QUERY1, TRANSACTION } = await Orm.CONNECT();
+  const { QUERY, QUERY1, TRANSACTION, ASSOCIATE } = await Orm.CONNECT();
   global.SELECT = Orm.SELECT;
   global.FROM = Orm.FROM;
   global.WHERE = Orm.WHERE;
   global.INSERT = Orm.INSERT;
   global.RALL = Orm.RALL;
+  global.Q = Orm.Q;
   global.QUERY = QUERY;
   global.QUERY1 = QUERY1;
   global.TRANSACTION = TRANSACTION;
+  global.ASSOCIATE = ASSOCIATE;
 
   App.use(function(req, res, next) {
     res.send = res.send.bind(res);
